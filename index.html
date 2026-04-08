@@ -3,62 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Breakout Mobile</title>
+<title>Breakout</title>
 
 <style>
 body {
+  margin: 0;
+  background: #111;
+  font-family: Arial;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-  
-/* GAME AREA */
+
+/* GAME FRAME */
 #gameWrapper {
-  width: 360px;
-  height: 600px;
-  position: relative;
-  margin-top: 10px;
+  width: 800px;
+  max-width: 95vw;
 }
 
 canvas {
   width: 100%;
-  height: 100%;
-  background: #222;
+  height: auto;
+  aspect-ratio: 800 / 500;
   display: block;
+  background: #222;
   border-radius: 10px;
 }
 
 /* UI */
 #ui {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
   color: white;
-  font-size: 14px;
+  text-align: center;
+  margin: 10px 0;
 }
 
 #restartBtn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  margin-top: 10px;
   padding: 10px 16px;
   display: none;
 }
 
-/* BUTTONS BELOW GAME */
+/* BUTTONS CENTERED BELOW */
 #controls {
+  width: 100%;
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 25px;
   margin-top: 15px;
 }
 
 button {
-  width: 75px;
-  height: 75px;
-  font-size: 26px;
+  width: 70px;
+  height: 70px;
+  font-size: 24px;
   border-radius: 50%;
   border: none;
   background: rgba(255,255,255,0.2);
@@ -71,9 +68,10 @@ button {
 
 <div id="gameWrapper">
   <div id="ui"></div>
-  <button id="restartBtn">Restart</button>
-  <canvas id="game"></canvas>
+  <canvas id="game" width="800" height="500"></canvas>
 </div>
+
+<button id="restartBtn">Restart</button>
 
 <div id="controls">
   <button id="leftBtn">◀</button>
@@ -83,12 +81,6 @@ button {
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-
-function resize() {
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
-}
-resize();
 
 const ui = document.getElementById("ui");
 const restartBtn = document.getElementById("restartBtn");
@@ -106,8 +98,8 @@ function init() {
 }
 
 function setupLevel(){
-  ball = { x:canvas.width/2, y:canvas.height/2, dx:3, dy:-3, r:10 };
-  paddle = { w:140, h:12, x:canvas.width/2 - 70 };
+  ball = { x:400, y:250, dx:3, dy:-3, r:10 };
+  paddle = { w:140, h:12, x:330 };
 
   bricks = [];
   for (let c=0;c<8;c++){
@@ -208,8 +200,8 @@ function loseLife(){
     gameOver = true;
     restartBtn.style.display = "block";
   } else {
-    ball.x = canvas.width/2;
-    ball.y = canvas.height/2;
+    ball.x = 400;
+    ball.y = 250;
   }
   updateUI();
 }
@@ -232,6 +224,18 @@ rightBtn.addEventListener("touchstart", e => {
 });
 rightBtn.addEventListener("touchend", () => right = false);
 rightBtn.addEventListener("touchcancel", () => right = false);
+
+/* KEYBOARD ALSO WORKS */
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight") right=true;
+  if(e.key==="ArrowLeft") left=true;
+});
+
+document.addEventListener("keyup",e=>{
+  if(e.key==="ArrowRight") right=false;
+  if(e.key==="ArrowLeft") left=false;
+});
 
 /* MOVEMENT */
 
