@@ -34,3 +34,27 @@ button {
   font-size: 16px;
   cursor: pointer;
 }
+
+#controls {
+  position: fixed;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+
+#leftBtn, #rightBtn {
+  width: 90px;
+  height: 90px;
+  font-size: 30px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+#leftBtn:active, #rightBtn:active {
+  background: rgba(255,255,255,0.4);
+}
