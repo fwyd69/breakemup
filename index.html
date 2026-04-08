@@ -74,7 +74,8 @@ const ui = document.getElementById("ui");
 let ball, paddle, bricks, score, lives;
 let left = false, right = false;
 
-let countdown = 3;
+let startTime;
+let countdownDuration = 3000;
 let gameStarted = false;
 
 /* INIT */
@@ -98,24 +99,10 @@ function init() {
     }
   }
 
-  countdown = 3;
+  startTime = Date.now();
   gameStarted = false;
 
   updateUI();
-  startCountdown();
-}
-
-/* COUNTDOWN */
-
-function startCountdown(){
-  let interval = setInterval(()=>{
-    countdown--;
-
-    if (countdown <= 0){
-      gameStarted = true;
-      clearInterval(interval);
-    }
-  },1000);
 }
 
 /* UI */
@@ -129,20 +116,25 @@ function updateUI(){
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  /* SHOW COUNTDOWN FIRST */
+  let elapsed = Date.now() - startTime;
+
   if (!gameStarted){
-    ctx.fillStyle = "white";
-    ctx.font = "60px Arial";
-    ctx.textAlign = "center";
+    let remaining = Math.ceil((countdownDuration - elapsed) / 1000);
 
-    let text = countdown > 0 ? countdown : "GO";
-    ctx.fillText(text, canvas.width/2, canvas.height/2);
+    if (remaining <= 0){
+      gameStarted = true;
+    } else {
+      ctx.fillStyle = "white";
+      ctx.font = "60px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(remaining, canvas.width/2, canvas.height/2);
 
-    requestAnimationFrame(draw);
-    return;
+      requestAnimationFrame(draw);
+      return;
+    }
   }
 
-  /* NORMAL GAME */
+  /* GAME */
 
   drawBall();
   drawPaddle();
@@ -174,6 +166,8 @@ function draw(){
 
   requestAnimationFrame(draw);
 }
+
+/* DRAW HELPERS */
 
 function drawBall(){
   ctx.beginPath();
