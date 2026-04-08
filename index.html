@@ -114,12 +114,14 @@ function setupLevel(){
   paddle = { w:140, h:12, x:330 };
 
   bricks = [];
-  for (let c=0;c<8;c++){
-    bricks[c]=[];
-    for (let r=0;r<5;r++){
-      bricks[c][r]={ status:1, x:0, y:0, w:0, h:0 };
-    }
-  }
+bricks[c][r]={
+  status:1,
+  x:0,
+  y:0,
+  w:0,
+  h:0,
+  color: `hsl(${r * 60}, 70%, 50%)`
+};
 
   updateUI();
 }
