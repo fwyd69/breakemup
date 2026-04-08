@@ -143,9 +143,7 @@ function drawPaddle(){
 }
 
 function drawBricks(){
-  let bw = canvas.width / 8 - 10;
-  let bh = 20;
-
+ ctx.fillStyle = b.color;
 bricks[c][r]={
   status:1,
   x:0,
