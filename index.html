@@ -33,7 +33,6 @@ canvas {
   margin: 10px;
 }
 
-/* BUTTONS CENTERED */
 #controls {
   width: 800px;
   max-width: 95vw;
@@ -51,14 +50,6 @@ button {
   border: none;
   background: rgba(255,255,255,0.25);
   color: white;
-}
-
-@media (max-width: 600px) {
-  button {
-    width: 110px;
-    height: 110px;
-    font-size: 34px;
-  }
 }
 </style>
 </head>
@@ -121,9 +112,8 @@ function startCountdown(){
     countdown--;
 
     if (countdown <= 0){
-      clearInterval(interval);
       gameStarted = true;
-      draw();
+      clearInterval(interval);
     }
   },1000);
 }
@@ -134,7 +124,56 @@ function updateUI(){
   ui.innerText = `Score: ${score} Lives: ${lives}`;
 }
 
-/* DRAWING */
+/* DRAW */
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  /* SHOW COUNTDOWN FIRST */
+  if (!gameStarted){
+    ctx.fillStyle = "white";
+    ctx.font = "60px Arial";
+    ctx.textAlign = "center";
+
+    let text = countdown > 0 ? countdown : "GO";
+    ctx.fillText(text, canvas.width/2, canvas.height/2);
+
+    requestAnimationFrame(draw);
+    return;
+  }
+
+  /* NORMAL GAME */
+
+  drawBall();
+  drawPaddle();
+  drawBricks();
+  collision();
+
+  if (ball.x<ball.r || ball.x>canvas.width-ball.r) ball.dx*=-1;
+  if (ball.y<ball.r) ball.dy*=-1;
+
+  if (ball.y>canvas.height-40){
+    if (ball.x>paddle.x && ball.x<paddle.x+paddle.w){
+      ball.dy*=-1;
+    } else {
+      lives--;
+      if (lives<=0){
+        alert("Game Over");
+        init();
+        return;
+      } else {
+        ball.x=400;
+        ball.y=250;
+      }
+      updateUI();
+    }
+  }
+
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  requestAnimationFrame(draw);
+}
 
 function drawBall(){
   ctx.beginPath();
@@ -168,8 +207,6 @@ function drawBricks(){
   }
 }
 
-/* COLLISION */
-
 function collision(){
   for (let c=0;c<8;c++){
     for (let r=0;r<5;r++){
@@ -191,67 +228,7 @@ function collision(){
   }
 }
 
-/* GAME LOOP */
-
-function draw(){
-
-  if (!gameStarted){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    ctx.fillStyle = "white";
-    ctx.font = "60px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(countdown > 0 ? countdown : "GO", canvas.width/2, canvas.height/2);
-
-    requestAnimationFrame(draw);
-    return;
-  }
-
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  drawBall();
-  drawPaddle();
-  drawBricks();
-  collision();
-
-  if (ball.x<ball.r || ball.x>canvas.width-ball.r) ball.dx*=-1;
-  if (ball.y<ball.r) ball.dy*=-1;
-
-  if (ball.y>canvas.height-40){
-    if (ball.x>paddle.x && ball.x<paddle.x+paddle.w){
-      ball.dy*=-1;
-    } else {
-      lives--;
-      if (lives<=0){
-        alert("Game Over");
-        init();
-        return;
-      } else {
-        ball.x=400;
-        ball.y=250;
-      }
-      updateUI();
-    }
-  }
-
-  ball.x += ball.dx;
-  ball.y += ball.dy;
-
-  requestAnimationFrame(draw);
-}
-
 /* CONTROLS */
-
-const leftBtn = document.getElementById("leftBtn");
-const rightBtn = document.getElementById("rightBtn");
-
-leftBtn.addEventListener("touchstart", e=>{e.preventDefault(); left=true;});
-leftBtn.addEventListener("touchend", ()=>left=false);
-
-rightBtn.addEventListener("touchstart", e=>{e.preventDefault(); right=true;});
-rightBtn.addEventListener("touchend", ()=>right=false);
-
-/* KEYBOARD */
 
 document.addEventListener("keydown", e=>{
   if (e.key==="ArrowRight"||e.key==="d"||e.key==="D") right=true;
@@ -262,6 +239,15 @@ document.addEventListener("keyup", e=>{
   if (e.key==="ArrowRight"||e.key==="d"||e.key==="D") right=false;
   if (e.key==="ArrowLeft"||e.key==="a"||e.key==="A") left=false;
 });
+
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
+
+leftBtn.addEventListener("touchstart", e=>{e.preventDefault(); left=true;});
+leftBtn.addEventListener("touchend", ()=>left=false);
+
+rightBtn.addEventListener("touchstart", e=>{e.preventDefault(); right=true;});
+rightBtn.addEventListener("touchend", ()=>right=false);
 
 /* MOVEMENT */
 
@@ -278,6 +264,7 @@ function movePaddle(){
 /* START */
 
 init();
+draw();
 movePaddle();
 </script>
 
