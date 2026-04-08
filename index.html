@@ -25,12 +25,6 @@ canvas {
   aspect-ratio: 800 / 500;
   background: #222;
   border-radius: 10px;
-  display: block;
-}
-
-#ui {
-  color: white;
-  margin: 10px;
 }
 
 #controls {
@@ -57,7 +51,6 @@ button {
 <body>
 
 <div id="gameWrapper">
-  <div id="ui"></div>
   <canvas id="game" width="800" height="500"></canvas>
 </div>
 
@@ -69,105 +62,45 @@ button {
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-const ui = document.getElementById("ui");
 
-let ball, paddle, bricks, score, lives;
-let left = false, right = false;
+let ball = { x:400, y:250, dx:3, dy:-3, r:10 };
+let paddle = { w:140, x:330 };
 
-let startTime;
-let countdownDuration = 3000;
-let gameStarted = false;
+let left=false, right=false;
 
-/* INIT */
+let startTime = Date.now();
+let started = false;
 
-function init() {
-  score = 0;
-  lives = 3;
-
-  ball = { x:400, y:250, dx:3, dy:-3, r:10 };
-  paddle = { w:140, h:12, x:330 };
-
-  bricks = [];
-  for (let c=0;c<8;c++){
-    bricks[c]=[];
-    for (let r=0;r<5;r++){
-      bricks[c][r]={
-        status:1,
-        x:0,y:0,w:0,h:0,
-        color:`hsl(${r*60},70%,50%)`
-      };
-    }
-  }
-
-  startTime = Date.now();
-  gameStarted = false;
-
-  updateUI();
-}
-
-/* UI */
-
-function updateUI(){
-  ui.innerText = `Score: ${score} Lives: ${lives}`;
-}
-
-/* DRAW */
+/* DRAW LOOP */
 
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   let elapsed = Date.now() - startTime;
+  let seconds = 3 - Math.floor(elapsed / 1000);
 
-  if (!gameStarted){
-    let remaining = Math.ceil((countdownDuration - elapsed) / 1000);
-
-    if (remaining <= 0){
-      gameStarted = true;
-    } else {
+  if (!started){
+    if (seconds > 0){
       ctx.fillStyle = "white";
       ctx.font = "60px Arial";
       ctx.textAlign = "center";
-      ctx.fillText(remaining, canvas.width/2, canvas.height/2);
-
-      requestAnimationFrame(draw);
-      return;
-    }
-  }
-
-  /* GAME */
-
-  drawBall();
-  drawPaddle();
-  drawBricks();
-  collision();
-
-  if (ball.x<ball.r || ball.x>canvas.width-ball.r) ball.dx*=-1;
-  if (ball.y<ball.r) ball.dy*=-1;
-
-  if (ball.y>canvas.height-40){
-    if (ball.x>paddle.x && ball.x<paddle.x+paddle.w){
-      ball.dy*=-1;
+      ctx.fillText(seconds, canvas.width/2, canvas.height/2);
     } else {
-      lives--;
-      if (lives<=0){
-        alert("Game Over");
-        init();
-        return;
-      } else {
-        ball.x=400;
-        ball.y=250;
-      }
-      updateUI();
+      started = true;
     }
   }
 
-  ball.x += ball.dx;
-  ball.y += ball.dy;
+  drawPaddle();
+  drawBall();
+
+  if (started){
+    updateBall();
+  }
 
   requestAnimationFrame(draw);
 }
 
-/* DRAW HELPERS */
+/* DRAW OBJECTS */
 
 function drawBall(){
   ctx.beginPath();
@@ -178,72 +111,52 @@ function drawBall(){
 
 function drawPaddle(){
   ctx.fillStyle = "#0095DD";
-  ctx.fillRect(paddle.x, canvas.height-30, paddle.w, paddle.h);
+  ctx.fillRect(paddle.x, canvas.height-30, paddle.w, 12);
 }
 
-function drawBricks(){
-  let bw = canvas.width/8 - 10;
-  let bh = 20;
+/* BALL LOGIC */
 
-  for (let c=0;c<8;c++){
-    for (let r=0;r<5;r++){
-      let b = bricks[c][r];
-      if (b.status){
-        let x = c*(bw+10)+5;
-        let y = r*(bh+10)+40;
+function updateBall(){
+  if (ball.x<ball.r || ball.x>canvas.width-ball.r) ball.dx*=-1;
+  if (ball.y<ball.r) ball.dy*=-1;
 
-        b.x=x; b.y=y; b.w=bw; b.h=bh;
-
-        ctx.fillStyle = b.color;
-        ctx.fillRect(x,y,bw,bh);
-      }
+  if (ball.y>canvas.height-40){
+    if (ball.x>paddle.x && ball.x<paddle.x+paddle.w){
+      ball.dy*=-1;
+    } else {
+      ball.x=400;
+      ball.y=250;
+      startTime = Date.now();
+      started = false;
     }
   }
-}
 
-function collision(){
-  for (let c=0;c<8;c++){
-    for (let r=0;r<5;r++){
-      let b = bricks[c][r];
-      if (b.status){
-        if (
-          ball.x > b.x &&
-          ball.x < b.x+b.w &&
-          ball.y > b.y &&
-          ball.y < b.y+b.h
-        ){
-          ball.dy *= -1;
-          b.status = 0;
-          score++;
-          updateUI();
-        }
-      }
-    }
-  }
+  ball.x += ball.dx;
+  ball.y += ball.dy;
 }
 
 /* CONTROLS */
 
 document.addEventListener("keydown", e=>{
-  if (e.key==="ArrowRight"||e.key==="d"||e.key==="D") right=true;
-  if (e.key==="ArrowLeft"||e.key==="a"||e.key==="A") left=true;
+  if (e.key==="ArrowRight"||e.key==="d") right=true;
+  if (e.key==="ArrowLeft"||e.key==="a") left=true;
 });
 
 document.addEventListener("keyup", e=>{
-  if (e.key==="ArrowRight"||e.key==="d"||e.key==="D") right=false;
-  if (e.key==="ArrowLeft"||e.key==="a"||e.key==="A") left=false;
+  if (e.key==="ArrowRight"||e.key==="d") right=false;
+  if (e.key==="ArrowLeft"||e.key==="a") left=false;
 });
 
 const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
 
-leftBtn.addEventListener("touchstart", e=>{e.preventDefault(); left=true;});
+leftBtn.addEventListener("touchstart", ()=>left=true);
 leftBtn.addEventListener("touchend", ()=>left=false);
 
-rightBtn.addEventListener("touchstart", e=>{e.preventDefault(); right=true;});
+rightBtn.addEventListener("touchstart", ()=>right=true);
 rightBtn.addEventListener("touchend", ()=>right=false);
 
-/* MOVEMENT */
+/* PADDLE LOOP */
 
 function movePaddle(){
   if (right) paddle.x += 6;
@@ -257,7 +170,6 @@ function movePaddle(){
 
 /* START */
 
-init();
 draw();
 movePaddle();
 </script>
